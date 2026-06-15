@@ -1,4 +1,5 @@
 import 'package:curso_mvvm_youtube/ui/auth/login/view_models/login_viewmodel.dart';
+import 'package:curso_mvvm_youtube/ui/home/widgets/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginFormWidget extends StatefulWidget {
@@ -14,7 +15,11 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  bool isLoggingIn = false;
+  @override
+  void initState() {
+    super.initState();
+    widget.loginViewmodel.login.addListener(_onResult);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,20 +61,26 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                 ),
               ],
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-              ),
-              onPressed: _validateForm,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: isLoggingIn
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 1,
-                      )
-                    : Text("Login", style: TextStyle(color: Colors.white)),
-              ),
+            ListenableBuilder(
+              listenable: widget.loginViewmodel.login,
+              builder: (context, child) {
+                final running = widget.loginViewmodel.login.running;
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                  ),
+                  onPressed: _validateForm,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: running
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 1,
+                          )
+                        : Text("Login", style: TextStyle(color: Colors.white)),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -81,7 +92,41 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
     if (_formKey.currentState?.validate() == true) {
       final username = usernameController.text;
       final password = passwordController.text;
-      await widget.loginViewmodel.login((username, password));
+      await widget.loginViewmodel.login.execute((username, password));
     }
+  }
+
+  void _onResult() {
+    final command = widget.loginViewmodel.login;
+
+    if (command.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("Usuário ou senha inválido"),
+        ),
+      );
+    }
+
+    if (command.complete) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+        (route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text("Login realizado com sucesso"),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.loginViewmodel.login.removeListener(_onResult);
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }
