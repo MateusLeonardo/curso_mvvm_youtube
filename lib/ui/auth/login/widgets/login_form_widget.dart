@@ -1,6 +1,7 @@
+import 'package:curso_mvvm_youtube/routing/routes.dart';
 import 'package:curso_mvvm_youtube/ui/auth/login/view_models/login_viewmodel.dart';
-import 'package:curso_mvvm_youtube/ui/home/widgets/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginFormWidget extends StatefulWidget {
   final LoginViewmodel loginViewmodel;
@@ -14,6 +15,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool isPasswordObscure = true;
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
               children: [
                 Row(children: [Text("Senha")]),
                 TextFormField(
-                  obscureText: true,
+                  obscureText: isPasswordObscure,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Por favor, digite a senha";
@@ -57,7 +59,17 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                     return null;
                   },
                   controller: passwordController,
-                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      onPressed: _togglePasswordVisibility,
+                      icon: Icon(
+                        isPasswordObscure
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -109,10 +121,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
     }
 
     if (command.complete) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-        (route) => false,
-      );
+      context.go(Routes.home);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.green,
@@ -120,6 +129,12 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
         ),
       );
     }
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      isPasswordObscure = !isPasswordObscure;
+    });
   }
 
   @override
