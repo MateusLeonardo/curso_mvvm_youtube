@@ -3,6 +3,7 @@ import 'package:curso_mvvm_youtube/routing/routes.dart';
 import 'package:curso_mvvm_youtube/ui/auth/login/view_models/login_viewmodel.dart';
 import 'package:curso_mvvm_youtube/ui/auth/login/widgets/login_screen.dart';
 import 'package:curso_mvvm_youtube/ui/home/widgets/home_screen.dart';
+import 'package:curso_mvvm_youtube/ui/splash/widgets/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
 GoRouter get router {
@@ -16,6 +17,7 @@ GoRouter get router {
         ),
       ),
       GoRoute(path: Routes.home, builder: (context, state) => HomeScreen()),
+      GoRoute(path: Routes.splash, builder: (context, state) => SplashScreen()),
     ],
   );
 }
